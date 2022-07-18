@@ -12,6 +12,7 @@ in pkgs.mkShell {
     ngrok
     openssl
     pkg-config
+    cargo-watch
   ];
 
 #
