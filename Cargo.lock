@@ -1717,6 +1717,7 @@ version = "0.1.0"
 dependencies = [
  "actix-http",
  "actix-web",
+ "awc",
  "env_logger",
  "line_bot_sdk",
  "log",
