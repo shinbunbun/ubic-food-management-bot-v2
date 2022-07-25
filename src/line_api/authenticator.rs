@@ -1,13 +1,22 @@
+use super::error::Error;
 use crate::config;
 
-#[derive(Debug)]
-pub struct Authenticator {}
+pub trait Authenticator {
+    fn get_authorization_token(&self) -> Result<String, Error>;
+}
 
-impl Authenticator {
-    pub fn get_authorization_token(&self) -> Result<String, std::env::VarError> {
-        config::get_line_api_token()
+#[derive(Debug)]
+pub struct BearerAuthenticator {}
+
+impl BearerAuthenticator {
+    pub fn new() -> BearerAuthenticator {
+        BearerAuthenticator {}
     }
-    pub fn new() -> Authenticator {
-        Authenticator {}
+}
+
+impl Authenticator for BearerAuthenticator {
+    fn get_authorization_token(&self) -> Result<String, Error> {
+        let token = config::get_line_api_token().map_err(|e| Error::EnvError(e))?;
+        Ok(format!("Bearer {}", token))
     }
 }
