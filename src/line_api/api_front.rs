@@ -1,5 +1,6 @@
-use awc;
+use awc::{self, ClientRequest, ClientResponse, SendClientRequest};
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 
 use super::error::Error;
 use super::error::Error::{ApiError, EnvError, SerdeError};
@@ -20,29 +21,48 @@ impl ApiFront {
         }
     }
 
-    async fn get<R: DeserializeOwned>(&self, uri: &str) -> Result<R, Error> {
-        let req = awc::Client::default();
+    fn get_bearer_token(&self) -> Result<String, Error> {
         let token = self
             .authenticator
             .get_authorization_token()
             .map_err(|e| EnvError(e))?;
-        println!("{}", uri);
-        println!("{}", token);
-        let req = req
-            .get(uri)
-            .insert_header(("Authorization", format!("Bearer {}", &token)));
-        let mut response = req.send().await.map_err(|e| ApiError(e.to_string()))?;
-        if response.status() != 200 {
-            println!("{}", response.status());
-            return Err(ApiError(
-                format!("Http status was {}", response.status()).to_string(),
-            ));
-        }
-        let body = response
-            .body()
-            .await
-            .map_err(|e| ApiError(e.to_string()))?
-            .to_vec();
-        serde_json::from_slice(&body).map_err(|e| SerdeError(e.to_string()))
+        let res = format!("Bearer {}", &token).to_string();
+        Ok(res)
+    }
+
+    fn make_request_uri(&self, uri: String) -> String {
+        format!("{}/{}", self.base_url, uri)
+    }
+
+    fn get_authorization_header(&self) -> Result<(&str, String), Error> {
+        Ok(("Authorization", self.get_bearer_token()?))
+    }
+
+    fn get_request(&self, uri: String) -> Result<ClientRequest, Error> {
+        let req = awc::Client::default()
+            .get(self.make_request_uri(uri))
+            .insert_header(self.get_authorization_header()?);
+        Ok(req)
+    }
+
+    fn post_request(&self, uri: String) -> Result<ClientRequest, Error> {
+        let req = awc::Client::default()
+            .post(self.make_request_uri(uri))
+            .insert_header(self.get_authorization_header()?);
+        Ok(req)
+    }
+
+    fn delete_request(&self, uri: String) -> Result<ClientRequest, Error> {
+        let req = awc::Client::default()
+            .delete(self.make_request_uri(uri))
+            .insert_header(self.get_authorization_header()?);
+        Ok(req)
+    }
+
+    fn patch_request(&self, uri: String) -> Result<ClientRequest, Error> {
+        let req = awc::Client::default()
+            .patch(self.make_request_uri(uri))
+            .insert_header(self.get_authorization_header()?);
+        Ok(req)
     }
 }
