@@ -38,28 +38,28 @@ impl ApiFront {
         Ok(("Authorization", self.get_bearer_token()?))
     }
 
-    fn get_request(&self, uri: String) -> Result<ClientRequest, Error> {
+    pub fn get_request(&self, uri: String) -> Result<ClientRequest, Error> {
         let req = awc::Client::default()
             .get(self.make_request_uri(uri))
             .insert_header(self.get_authorization_header()?);
         Ok(req)
     }
 
-    fn post_request(&self, uri: String) -> Result<ClientRequest, Error> {
+    pub fn post_request(&self, uri: String) -> Result<ClientRequest, Error> {
         let req = awc::Client::default()
             .post(self.make_request_uri(uri))
             .insert_header(self.get_authorization_header()?);
         Ok(req)
     }
 
-    fn delete_request(&self, uri: String) -> Result<ClientRequest, Error> {
+    pub fn delete_request(&self, uri: String) -> Result<ClientRequest, Error> {
         let req = awc::Client::default()
             .delete(self.make_request_uri(uri))
             .insert_header(self.get_authorization_header()?);
         Ok(req)
     }
 
-    fn patch_request(&self, uri: String) -> Result<ClientRequest, Error> {
+    pub fn patch_request(&self, uri: String) -> Result<ClientRequest, Error> {
         let req = awc::Client::default()
             .patch(self.make_request_uri(uri))
             .insert_header(self.get_authorization_header()?);
