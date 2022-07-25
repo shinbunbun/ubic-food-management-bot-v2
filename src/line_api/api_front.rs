@@ -64,3 +64,25 @@ where
         Ok(req)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::line_api::authenticator::Authenticator;
+
+    use super::ApiFront;
+
+    struct MockAuthenticator {}
+    impl Authenticator for MockAuthenticator {
+        fn get_authorization_token(&self) -> Result<String, crate::line_api::error::Error> {
+            Ok("MockToken".to_string())
+        }
+    }
+
+    #[test]
+    fn hoge() {
+        let auth = MockAuthenticator {};
+        let front = ApiFront::new(auth, "https://mock-url".to_string());
+        let request = front.get_request("hello".to_string()).unwrap();
+        assert_eq!(request.get_uri().to_string(), "https://mock-url/hello");
+    }
+}
